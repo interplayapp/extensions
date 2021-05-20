@@ -46,6 +46,8 @@ const FigmaText = (node, parent, getChildren, options) => {
   const weight = tokenNameOrValue(tokens, nodeTokens, 'fontWeight', fontWeight);
   const color = tokenNameOrValue(tokens, nodeTokens, 'color', colorValue);
   const size = tokenNameOrValue(tokens, nodeTokens, 'fontSize', fontSize + 'px');
+  console.log({weights, color, size});
+
   const props = {
     weight,
     size,
@@ -100,6 +102,7 @@ const FigmaFrame = (node, parent, getChildren, options) => {
   }
 }
 
+console.log("UPDATED TRANSLATION...");
 
 // helper functions
 const tokenNameOrValue = (tokens, nodeTokens, type, value) => {
