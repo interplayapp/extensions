@@ -103,8 +103,10 @@ const FigmaFrame = (node, parent, getChildren, options) => {
 
 // helper functions
 const tokenNameOrValue = (tokens, nodeTokens, type, value) => {
+  console.log({tokens, nodeTokens, type, value})
   if(nodeTokens[type]){
     // if a token was applied to this node, use it 
+    console.log({nodeTokensType: nodeTokens[type]})
     return nodeTokens[type];
   }
   // try to find the token by value
