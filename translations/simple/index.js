@@ -1,4 +1,4 @@
-// Simple Figma Extension to convert FRAME and TEXT layers
+// Simple Figma Extension to convert FRAME and TEXT layers - 1.0
 interplay.addExtension({
   id: 'jsx',
   name: 'JSX',
@@ -46,7 +46,6 @@ const FigmaText = (node, parent, getChildren, options) => {
   const weight = tokenNameOrValue(tokens, nodeTokens, 'fontWeight', fontWeight);
   const color = tokenNameOrValue(tokens, nodeTokens, 'color', colorValue);
   const size = tokenNameOrValue(tokens, nodeTokens, 'fontSize', fontSize + 'px');
-  console.log({weight, color, size});
 
   const props = {
     weight,
@@ -102,15 +101,11 @@ const FigmaFrame = (node, parent, getChildren, options) => {
   }
 }
 
-console.log("UPDATED TRANSLATION...");
-
 // helper functions
 const tokenNameOrValue = (tokens, nodeTokens, type, value) => {
-  console.log({tokens, nodeTokens, type, value})
   if(nodeTokens[type]){
     // if a token was applied to this node, use it 
-    console.log({nodeTokensType: nodeTokens[type]})
-    return nodeTokens[type];
+    return nodeTokens[type].name;
   }
   // try to find the token by value
   const token = Object.values(tokens).find(t => t.type === type && t.value === value);
