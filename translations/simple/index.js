@@ -1,6 +1,3 @@
-console.log("Adding Code Translation Extensions...");
-
-
 // Simple Figma Extension to convert FRAME and TEXT layers
 interplay.addExtension({
   id: 'jsx',
@@ -43,11 +40,12 @@ const FigmaText = (node, parent, getChildren, options) => {
     }
   */
 
-  const tokens = Object.values(options.getTokens());
+  const tokens = options.getTokens();
+  const nodeTokens = node.props.tokens || {};
 
-  const weight = tokenNameOrValue(tokens, 'fontWeight', fontWeight);
-  const color = tokenNameOrValue(tokens, 'color', colorValue);
-  const size = tokenNameOrValue(tokens, 'fontSize', fontSize + 'px');
+  const weight = tokenNameOrValue(tokens, nodeTokens, 'fontWeight', fontWeight);
+  const color = tokenNameOrValue(tokens, nodeTokens, 'color', colorValue);
+  const size = tokenNameOrValue(tokens, nodeTokens, 'fontSize', fontSize + 'px');
   const props = {
     weight,
     size,
@@ -67,7 +65,6 @@ const FigmaText = (node, parent, getChildren, options) => {
 const FigmaFrame = (node, parent, getChildren, options) => {
   const props = {};
   const tokens = options.getTokens();
-  console.log({tokens});
   const css = options.getCSS(node, parent);
   
   // tokens prop holds the tokens which were aplied to the layer in the plugin
@@ -79,10 +76,10 @@ const FigmaFrame = (node, parent, getChildren, options) => {
       // ignore certain css props for now.
       delete css[key];
     }
-    else if(styleToProp[key]){
+    else if(styleToFrameProp[key]){
       // convert known style attributes to props
-      const propName = styleToProp[key];
-      props[propName] = tokenNameOrValue(Object.values((tokens)), nodeTokens, key, css[key]);
+      const propName = styleToFrameProp[key];
+      props[propName] = tokenNameOrValue(tokens, nodeTokens, key, css[key]);
       delete css[key];
     }    
   });
@@ -111,21 +108,15 @@ const tokenNameOrValue = (tokens, nodeTokens, type, value) => {
     return nodeTokens[type];
   }
   // try to find the token by value
-  const token = tokens.find(t => t.type === type && t.value === value);
+  const token = Object.values(tokens).find(t => t.type === type && t.value === value);
+
   return token ? token.path : value;
 }
-
-const kebabCase = (str) => str 
-  ? str
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/\s+/g, '-')
-    .toLowerCase()
-  : "";
 
 const mootValues = ['normal', 'unset'];
 const mootProps = ['bottom', 'display', 'height', 'left', 'minHeight', 'minWidth', 'overflow', 'position', 'right', 'top', 'width', 'boxSizing'];
 
-const styleToProp = {
+const styleToFrameProp = {
   backgroundColor: 'bg',
   boxShadow: 'shadow',
   padding: 'p',
@@ -138,13 +129,3 @@ const styleToProp = {
   justifyItems: 'justifyItems',
   flexDirection: 'flexDirection'
 };
-
-const keyToNamespace = {
-  gap: 'space',
-  padding: 'space',
-  backgroundColor: 'colors',
-  border: 'borders',
-  boxShadow: 'shadows'
-};
-
-const jsTokenName = (key, name) => name?.replace(kebabCase(keyToNamespace[key] || key) + '-', '')
