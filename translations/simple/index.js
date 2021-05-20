@@ -25,11 +25,22 @@ const FigmaText = (node, parent, getChildren, options) => {
 
   // includes will be added to the top of the code snippet. 
   // The id field is used to prevent duplicates
-  options.addInclude('Body', `import Body from '@interplayapp/mission/components/Body';`);
+  options.addInclude('Text', `import Text from '@interplayapp/mission/components/Text';`);
 
+
+  // getTokens returns an object of tokens in the following format
+  /*
+    {
+      'colors.black.100': {
+        name: '100',
+        path: 'colors.black.100',
+        value: '#000000', // value has all aliases resolved
+      },
+      ... other tokens
+    }
+  */
 
   const tokens = Object.values(options.getTokens());
-  console.log({tokens});
 
   const weight = tokenNameOrValue(tokens, 'fontWeight', fontWeight);
   const color = tokenNameOrValue(tokens, 'color', colorValue);
@@ -46,13 +57,16 @@ const FigmaText = (node, parent, getChildren, options) => {
   const propsString = Object.keys(props).map((key) => `${key}="${props[key]}"`, '').join(" ");
 
   // return the translation...
-  return `<Body ${propsString}>${node?.props?.characters}</Body>`;
+  return `<Text ${propsString}>${node?.props?.characters}</Text>`;
 }
 
 
 const FigmaFrame = (node, parent, getChildren, options) => {
   const props = {};
+  const tokens = options.getTokens();
+  console.log({tokens});
   const css = options.getCSS(node, parent);
+  
   // tokens prop holds the tokens which were aplied to the layer in the plugin
   // the key is the css prop it was applied to, and the value is the token path (e.g. colors.black.100)
   const nodeTokens = node.props.tokens || {};
@@ -62,17 +76,12 @@ const FigmaFrame = (node, parent, getChildren, options) => {
       // ignore certain css props for now.
       delete css[key];
     }
-    else {
-      if(styleToProp[key]){
-        // convert known style attributes to props
-        props[styleToProp[key]] = (nodeTokens[key] && jsTokenName(key, nodeTokens[key].name)) || css[key];
-        delete css[key];
-      }
-      else if(nodeTokens[key]){
-        // if a token was applied to this node, use the token css variable 
-        css[key] = `var(--${nodeTokens[key]})`;
-      }
-    }
+    else if(styleToProp[key]){
+      // convert known style attributes to props
+      const propName = styleToProp[key];
+      props[propName] = tokenNameOrValue(Object.values((tokens)), nodeTokens, key, css[key]);
+      delete css[key];
+    }    
   });
   
   const styleString = Object.keys(css).map(key => `${key}: '${css[key]}'`).join(', ');
@@ -81,10 +90,9 @@ const FigmaFrame = (node, parent, getChildren, options) => {
     propString += ` style={{${styleString}}}`;
   }
 
-  const kids = getChildren();
   if(node.props.layoutMode === "NONE"){
     options.addInclude('Box', `import Box from '@interplapp/mission/components/Box';`);
-    return `<Box ${propString}>${kids.join('')}</Box>`;  
+    return `<Box ${propString}>${getChildren().join('')}</Box>`;  
   }
   else {
     options.addInclude('Stack', `import Stack from '@interplapp/mission/components/Stack';`);
@@ -94,9 +102,14 @@ const FigmaFrame = (node, parent, getChildren, options) => {
 
 
 // helper functions
-const tokenNameOrValue = (tokens, type, value) => {
+const tokenNameOrValue = (tokens, nodeTokens, type, value) => {
+  if(nodeTokens[type]){
+    // if a token was applied to this node, use it 
+    return nodeTokens[type];
+  }
+  // try to find the token by value
   const token = tokens.find(t => t.type === type && t.value === value);
-  return token ? token.name : value;
+  return token ? token.path : value;
 }
 
 const kebabCase = (str) => str 
