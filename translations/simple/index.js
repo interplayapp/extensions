@@ -1,3 +1,6 @@
+console.log("Adding Code Translation Extensions...");
+
+
 // Simple Figma Extension to convert FRAME and TEXT layers
 interplay.addExtension({
   id: 'jsx',
