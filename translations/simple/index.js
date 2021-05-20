@@ -46,7 +46,7 @@ const FigmaText = (node, parent, getChildren, options) => {
   const weight = tokenNameOrValue(tokens, nodeTokens, 'fontWeight', fontWeight);
   const color = tokenNameOrValue(tokens, nodeTokens, 'color', colorValue);
   const size = tokenNameOrValue(tokens, nodeTokens, 'fontSize', fontSize + 'px');
-  console.log({weights, color, size});
+  console.log({weight, color, size});
 
   const props = {
     weight,
